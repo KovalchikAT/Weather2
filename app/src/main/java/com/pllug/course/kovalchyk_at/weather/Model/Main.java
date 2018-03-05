@@ -11,7 +11,7 @@ public class Main {
     private double temp_max;
     private int humidity;
 
-    public Main(double temp, double pressure, int humidity, double temp_min, double temp_max){
+    public Main(double temp, double pressure, int humidity, double temp_min, double temp_max) {
         this.temp = temp;
         this.pressure = pressure;
         this.humidity = humidity;
@@ -19,8 +19,15 @@ public class Main {
         this.temp_max = temp_max;
     }
 
-    public double getTemp() {
-        return temp;
+    public double getTemp(String s) {
+        if (s.equals("C")) {
+            return temp - 273.15;
+        } else {
+            if (s.equals("F")) {
+                return 1.8 * temp - 459.67;
+            } else
+                return 0;
+        }
     }
 
     public void setTemp(double temp) {

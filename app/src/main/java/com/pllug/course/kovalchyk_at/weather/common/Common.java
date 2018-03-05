@@ -11,9 +11,16 @@ import java.util.Date;
  */
 
 public class Common {
-    public static String API_KEY = "4e0cec9d68c5aca1a0df862afb6c4005";
+    public static String API_KEY = "fa1f58f3f03c033ca2684fa030bb70d5";
     public static String API_LINK = "http://api.openweathermap.org/data/2.5/weather";
 
+    @NonNull
+    public static String apiRequest(String city){
+        StringBuilder sb = new StringBuilder(API_LINK);
+        sb.append(String.format("?q=%s&APPID=%s",city,API_KEY));
+        //sb.append(String.format("?q=city-%s&APPID-%s&units-metric",city,API_KEY));
+        return sb.toString();
+    }
     @NonNull
     public static String apiRequest(String lat, String lon){
         StringBuilder sb = new StringBuilder(API_LINK);

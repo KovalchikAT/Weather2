@@ -12,9 +12,10 @@ import java.net.URL;
  */
 
 public class Helper {
-    static String stream = null;
+    static String stream;
 
     public Helper() {
+        stream = null;
     }
 
     public String getHTTPData(String urlString) {

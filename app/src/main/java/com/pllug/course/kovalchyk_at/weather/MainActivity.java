@@ -1,9 +1,9 @@
 package com.pllug.course.kovalchyk_at.weather;
 
 import android.Manifest;
+import android.app.Fragment;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Criteria;
 import android.location.Location;
@@ -11,10 +11,12 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
+import android.widget.AutoCompleteTextView;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -22,7 +24,6 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.pllug.course.kovalchyk_at.weather.Helper.Helper;
 import com.pllug.course.kovalchyk_at.weather.Model.OpenWeatherMap;
-import com.pllug.course.kovalchyk_at.weather.Model.Sys;
 import com.pllug.course.kovalchyk_at.weather.common.Common;
 import com.squareup.picasso.Picasso;
 
@@ -33,15 +34,18 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     double lat, lng;
     TextView txtCity, txtLastUpdate, txtDescription, txtHumidity, txtTime, txtCelsius;
     ImageView imageView;
+    AutoCompleteTextView city;
+    Button btn;
     Context context;
 
     LocationListener locationListener;
     LocationManager locationManager;
     String provider;
-    OpenWeatherMap openWeatherMap = new OpenWeatherMap();
+    OpenWeatherMap openWeatherMap;
     Location loc;
 
     int MY_PERMISSION = 0;
+    private String req;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,10 +58,20 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         txtDescription = (TextView) findViewById(R.id.txtDescription);
         txtTime = (TextView) findViewById(R.id.txtTime);
         txtCelsius = (TextView) findViewById(R.id.txtCelsius);
-        txtHumidity = (TextView) findViewById(R.id.txtCity);
+        txtHumidity = (TextView) findViewById(R.id.txtHumidity);
         imageView = (ImageView) findViewById(R.id.imageView);
+        city = (AutoCompleteTextView) findViewById(R.id.txtSetCity);
+        btn = (Button) findViewById(R.id.btnReset);
+
+        btn.setOnClickListener(new Button.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                new GetWeather().execute(Common.apiRequest(String.valueOf(city.getText())));
+            }
+        });
 
         //get coord
+        openWeatherMap = new OpenWeatherMap();
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         locationListener = new LocationListener() {
             @Override
@@ -88,9 +102,16 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
             //                                          int[] grantResults)
             // to handle the case where the user grants the permission. See the documentation
             // for ActivityCompat#requestPermissions for more details.
-
+            ActivityCompat.requestPermissions(MainActivity.this, new String[]{
+                            Manifest.permission.INTERNET,
+                            Manifest.permission.ACCESS_COARSE_LOCATION,
+                            Manifest.permission.ACCESS_FINE_LOCATION,
+                            Manifest.permission.ACCESS_NETWORK_STATE,
+                            Manifest.permission.SYSTEM_ALERT_WINDOW,
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    MY_PERMISSION);
         }
-        // Location location = locationManager.requestLocationUpdates("gps", 5000, 0, locationListener);
+
         provider = locationManager.getBestProvider(new Criteria(), false);
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -112,56 +133,17 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         }
 
         Location location = locationManager.getLastKnownLocation(provider);
-        location = getLocation();
-        //Location location = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
+
         if (location == null) Log.e("TAG", "No Location");
 
-    }
 
-    protected Location getLocation() {
-        try {
-            locationManager = (LocationManager) context.getSystemService(LOCATION_SERVICE);
-            Log.e("tag", String.valueOf(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)));
-            if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
-                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                    ActivityCompat.requestPermissions(MainActivity.this, new String[]{
-                                    Manifest.permission.INTERNET,
-                                    Manifest.permission.ACCESS_COARSE_LOCATION,
-                                    Manifest.permission.ACCESS_FINE_LOCATION,
-                                    Manifest.permission.ACCESS_NETWORK_STATE,
-                                    Manifest.permission.SYSTEM_ALERT_WINDOW,
-                                    Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                            MY_PERMISSION);
-                }
-                locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 60000, 10, this);
-                }
-            if (locationManager!=null){
-                loc = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-                if(loc != null){
-                    lat = loc.getLatitude();
-                    lng = loc.getLongitude();
-                }
-            }
-            }catch (Exception e){
-                e.printStackTrace();
-            }
-
-        return loc;
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            ActivityCompat.requestPermissions(MainActivity.this, new String[]{
+                   ActivityCompat.requestPermissions(MainActivity.this, new String[]{
                             Manifest.permission.INTERNET,
                             Manifest.permission.ACCESS_COARSE_LOCATION,
                             Manifest.permission.ACCESS_FINE_LOCATION,
@@ -170,22 +152,13 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                             Manifest.permission.WRITE_EXTERNAL_STORAGE},
                     MY_PERMISSION);
         }
-
         locationManager.removeUpdates(this);
-
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
             ActivityCompat.requestPermissions(MainActivity.this, new String[]{
                             Manifest.permission.INTERNET,
                             Manifest.permission.ACCESS_COARSE_LOCATION,
@@ -196,16 +169,12 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                     MY_PERMISSION);
         }
         locationManager.requestLocationUpdates(provider, 400, 1, this);
-
     }
 
     @Override
     public void onLocationChanged(Location location) {
         lat = location.getLatitude();
         lng = location.getLongitude();
-       // lat = 49.842;
-       // lng = 24.0316;
-
         new GetWeather().execute(Common.apiRequest(String.valueOf(lat), String.valueOf(lng)));
     }
 
@@ -242,17 +211,16 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
                 return;
             }
             Gson gson = new Gson();
-            Type mType = new TypeToken<OpenWeatherMap>() {
-            }.getType();
+            Type mType = new TypeToken<OpenWeatherMap>() {}.getType();
             openWeatherMap = gson.fromJson(s, mType);
             pd.dismiss();
 
-            txtCity.setText(String.format("%s,%s", openWeatherMap.getName(), openWeatherMap.getSys().getCountry()));
-            txtLastUpdate.setText(String.format("Last updated: %s", Common.getDateNow()));
-            txtDescription.setText(String.format("%s", openWeatherMap.getWeather().get(0).getDescriptor()));
-            txtTime.setText(String.format("%s/%s", Common.unixTimeStampToDateTime(openWeatherMap.getSys().getSunrise()), Common.unixTimeStampToDateTime(openWeatherMap.getSys().getSunset())));
-            txtHumidity.setText(String.format("%d%%", openWeatherMap.getMain().getHumidity()));
-            txtCelsius.setText(String.format("%.2f C", openWeatherMap.getMain().getTemp()));
+            txtCity.setText(String.format("Місто, країна : %s,%s", openWeatherMap.getName(), openWeatherMap.getSys().getCountry()));
+            txtLastUpdate.setText(String.format("Останнє оновлення : %s", Common.getDateNow()));
+            txtDescription.setText(String.format("%s", openWeatherMap.getWeather().get(0).getMain()));
+            txtTime.setText(String.format("Час сходу/заходу сонця : %s/%s", Common.unixTimeStampToDateTime(openWeatherMap.getSys().getSunrise()), Common.unixTimeStampToDateTime(openWeatherMap.getSys().getSunset())));
+            txtHumidity.setText(String.format("Вологість : %d%%", openWeatherMap.getMain().getHumidity()));
+            txtCelsius.setText(String.format("Температура : %.2f C", openWeatherMap.getMain().getTemp("C")));
 
             Picasso.with(MainActivity.this).load(Common.getImage(openWeatherMap.getWeather().get(0).getIcon())).into(imageView);
 
