@@ -19,15 +19,8 @@ public class Main {
         this.temp_max = temp_max;
     }
 
-    public double getTemp(String s) {
-        if (s.equals("C")) {
-            return temp - 273.15;
-        } else {
-            if (s.equals("F")) {
-                return 1.8 * temp - 459.67;
-            } else
-                return 0;
-        }
+    public double getTemp() {
+            return temp;
     }
 
     public void setTemp(double temp) {

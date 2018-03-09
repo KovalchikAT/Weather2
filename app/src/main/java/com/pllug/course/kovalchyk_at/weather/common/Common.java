@@ -15,16 +15,15 @@ public class Common {
     public static String API_LINK = "http://api.openweathermap.org/data/2.5/weather";
 
     @NonNull
-    public static String apiRequest(String city){
+    public static String apiRequest(String city, String language, String units){
         StringBuilder sb = new StringBuilder(API_LINK);
-        sb.append(String.format("?q=%s&APPID=%s",city,API_KEY));
-        //sb.append(String.format("?q=city-%s&APPID-%s&units-metric",city,API_KEY));
+        sb.append(String.format("?q=%s&lang=%s&APPID=%s&units=%s",city,language,API_KEY,units));
         return sb.toString();
     }
     @NonNull
-    public static String apiRequest(String lat, String lon){
+    public static String apiRequest(String lat, String lon, String language, String units){
         StringBuilder sb = new StringBuilder(API_LINK);
-        sb.append(String.format("?lat-%s&lng-%s&APPID-%s&units-metric",lat,lon,API_KEY));
+        sb.append(String.format("?lat=%s&lon=%s&lang=%s&APPID=%s&units=%s",lat,lon,language,API_KEY,units));
         return sb.toString();
     }
 

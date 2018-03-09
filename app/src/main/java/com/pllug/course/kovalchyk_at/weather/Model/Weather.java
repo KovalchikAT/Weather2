@@ -7,14 +7,14 @@ package com.pllug.course.kovalchyk_at.weather.Model;
 public class Weather {
     private int id;
     private String main;
-    private String descriptor;
+    private String description;
     private String icon;
 
 
-    public Weather(int id, String main, String descriptor, String icon){
+    public Weather(int id, String main, String description, String icon){
         this.id = id;
         this.main = main;
-        this.descriptor = descriptor;
+        this.description = description;
         this.icon = icon;
     }
 
@@ -34,12 +34,12 @@ public class Weather {
         this.main = main;
     }
 
-    public String getDescriptor() {
-        return descriptor;
+    public String getDescription() {
+        return description;
     }
 
-    public void setDescriptor(String descriptor) {
-        this.descriptor = descriptor;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public String getIcon() {
