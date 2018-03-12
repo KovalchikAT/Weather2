@@ -21,6 +21,7 @@ import android.widget.TextView;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.pllug.course.kovalchyk_at.weather.Helper.GPSTracker;
 import com.pllug.course.kovalchyk_at.weather.Helper.Helper;
 import com.pllug.course.kovalchyk_at.weather.Model.OpenWeatherMap;
 import com.pllug.course.kovalchyk_at.weather.common.Common;
@@ -42,6 +43,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
     OpenWeatherMap openWeatherMap;
 
     int MY_PERMISSION = 0;
+    GPSTracker gpsTracker;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,13 +104,15 @@ public class MainActivity extends AppCompatActivity implements LocationListener 
         };
         provider = locationManager.getBestProvider(new Criteria(), false);
         Location location = locationManager.getLastKnownLocation(provider);
+        gpsTracker = new GPSTracker(getApplicationContext());
         if (location == null) {
             Log.e("TAG", "No Location");
-        } else {
-            //lat = location.getLatitude();
-            //lng = location.getLongitude();
-           // new GetWeather().execute(Common.apiRequest(String.valueOf(lat), String.valueOf(lng), "ua", "metric"));
+            location = gpsTracker.getLocation();
         }
+        lat = location.getLatitude();
+        lng = location.getLongitude();
+        new GetWeather().execute(Common.apiRequest(String.valueOf(lat), String.valueOf(lng), "ua", "metric"));
+
     }
 
     @Override
